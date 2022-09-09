@@ -3,6 +3,7 @@
 namespace Statamic\Structures;
 
 use Statamic\Contracts\Structures\Nav;
+use Statamic\Facades\Action;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Structure;
 use Statamic\Facades\User;
@@ -86,17 +87,18 @@ class TreeBuilder
             $collection = $page->collection();
 
             return [
-                'id'          => $page->id(),
-                'entry'       => $page->reference(),
-                'title'       => $page->hasCustomTitle() ? $page->title() : null,
-                'entry_title' => $page->referenceExists() ? $page->entry()->value('title') : null,
-                'url'         => $page->referenceExists() ? null : $page->url(),
-                'edit_url'    => $page->editUrl(),
-                'can_delete'  => $page->referenceExists() ? User::current()->can('delete', $page->entry()) : true,
-                'slug'        => $page->slug(),
-                'status'      => $page->referenceExists() ? $page->status() : null,
-                'redirect'    => $page->referenceExists() ? $page->entry()->get('redirect') : null,
-                'collection'  => ! $collection ? null : [
+                'id'            => $page->id(),
+                'entry'         => $page->reference(),
+                'title'         => $page->hasCustomTitle() ? $page->title() : null,
+                'entry_title'   => $page->referenceExists() ? $page->entry()->value('title') : null,
+                'entry_actions' => $page->referenceExists() ? Action::for($page->entry(), ['collection' => $page->entry()->collection()->handle()]) : null,
+                'url'           => $page->referenceExists() ? null : $page->url(),
+                'edit_url'      => $page->editUrl(),
+                'can_delete'    => $page->referenceExists() ? User::current()->can('delete', $page->entry()) : true,
+                'slug'          => $page->slug(),
+                'status'        => $page->referenceExists() ? $page->status() : null,
+                'redirect'      => $page->referenceExists() ? $page->entry()->get('redirect') : null,
+                'collection'    => ! $collection ? null : [
                     'handle' => $collection->handle(),
                     'title' => $collection->title(),
                     'edit_url' => $collection->showUrl(),

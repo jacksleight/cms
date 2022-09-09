@@ -136,12 +136,15 @@
                         @click="createEntry(blueprint.handle, branch.id)"
                         v-text="blueprints.length > 1 ? blueprint.title : __('Create Child Entry')" />
                 </template>
-                <template v-if="branch.can_delete">
+                <template>
                     <li class="divider"></li>
-                    <dropdown-item
-                        :text="__('Delete')"
-                        class="warning"
-                        @click="deleteTreeBranch(branch, removeBranch, orphanChildren)" />
+                    <data-list-inline-actions
+                        :item="branch.entry"
+                        :url="actionUrl"
+                        :actions="branch.entry_actions"
+                        @started="actionStarted"
+                        @completed="actionCompleted"
+                    />
                 </template>
             </template>
         </page-tree>
@@ -168,8 +171,13 @@ import PageTree from '../structures/PageTree.vue';
 import DeleteEntryConfirmation from './DeleteEntryConfirmation.vue';
 import DeleteLocalizationConfirmation from './DeleteLocalizationConfirmation.vue';
 import SiteSelector from '../SiteSelector.vue';
+import HasActions from '../data-list/HasActions';
 
 export default {
+
+    mixins: [
+        HasActions,
+    ],
 
     components: {
         PageTree,
@@ -244,7 +252,7 @@ export default {
             countChildren(this.entryBeingDeleted);
             return children;
         }
-
+        
     },
 
     watch: {
