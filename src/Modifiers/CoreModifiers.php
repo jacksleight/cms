@@ -20,6 +20,7 @@ use Statamic\Facades\Parse;
 use Statamic\Facades\Path;
 use Statamic\Facades\Site;
 use Statamic\Facades\URL;
+use Statamic\Facades\User;
 use Statamic\Facades\YAML;
 use Statamic\Fields\Value;
 use Statamic\Fields\Values;
@@ -2763,6 +2764,14 @@ class CoreModifiers extends Modifier
     public function timezone($value, $params)
     {
         $timezone = Arr::get($params, 0, Config::get('app.timezone'));
+
+        if ($timezone === 'app') {
+            $timezone = config('app.timezone');
+        } elseif ($timezone === 'site') {
+            $timezone = Site::current()->timezone() ?? config('app.timezone');
+        } elseif ($timezone === 'user') {
+            $timezone = optional(User::current())->preferredTimezone() ?? Site::current()->timezone() ?? config('app.timezone');
+        }
 
         return $this->carbon($value)->tz($timezone);
     }

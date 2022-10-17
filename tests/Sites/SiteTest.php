@@ -49,6 +49,14 @@ class SiteTest extends TestCase
     }
 
     /** @test */
+    public function gets_timezone()
+    {
+        $site = new Site('en', ['timezone' => 'Europe/Paris']);
+
+        $this->assertEquals('Europe/Paris', $site->timezone());
+    }
+
+    /** @test */
     public function gets_lang()
     {
         $this->assertEquals('en', (new Site('en', ['locale' => 'en_US']))->lang());
@@ -236,6 +244,7 @@ class SiteTest extends TestCase
             'name' => 'Test',
             'url' => '/sub',
             'locale' => 'en_US',
+            'timezone' => 'Europe/Paris',
         ]);
 
         $values = $site->augmented()->all();
@@ -246,6 +255,7 @@ class SiteTest extends TestCase
             'lang' => 'en',
             'locale' => 'en_US',
             'short_locale' => 'en',
+            'timezone' => 'Europe/Paris',
             'url' => '/sub',
             'permalink' => 'http://absolute-url-resolved-from-request.com/sub',
             'direction' => 'ltr',

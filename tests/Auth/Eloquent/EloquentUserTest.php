@@ -113,6 +113,7 @@ class EloquentUserTest extends TestCase
             'updated_at' => Carbon::parse('2019-11-21 23:39:29'),
             'preferences' => [
                 'locale' => 'en',
+                'timezone' => 'Europe/Madrid',
             ],
         ];
     }
@@ -126,6 +127,7 @@ class EloquentUserTest extends TestCase
             'updated_at' => $lt7 ? now()->format('Y-m-d H:i:s') : now()->toISOString(),
             'preferences' => [
                 'locale' => 'en',
+                'timezone' => 'Europe/Madrid',
             ],
         ];
     }

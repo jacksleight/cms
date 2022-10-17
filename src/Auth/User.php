@@ -285,4 +285,14 @@ abstract class User implements
     {
         return $this->setPreference('locale', $locale);
     }
+
+    public function preferredTimezone()
+    {
+        return $this->getPreference('timezone');
+    }
+
+    public function setPreferredTimezone($timezone)
+    {
+        return $this->setPreference('timezone', $timezone);
+    }
 }

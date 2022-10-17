@@ -30,6 +30,7 @@ trait UserContractTests
                 'content' => 'Lorem Ipsum',
             ])
             ->setPreferredLocale('en')
+            ->setPreferredTimezone('Europe/Madrid')
             ->setSupplement('supplemented', 'qux')
             ->assignRole($roleOne = $this->createRole('role_one'))
             ->assignRole($roleTwo = $this->createRole('role_two'))
@@ -284,6 +285,12 @@ trait UserContractTests
     }
 
     /** @test */
+    public function it_gets_preferred_timezone()
+    {
+        $this->assertEquals('Europe/Madrid', $this->user()->preferredTimezone());
+    }
+
+    /** @test */
     public function it_encrypts_a_password()
     {
         $user = $this->user();
@@ -365,6 +372,7 @@ trait UserContractTests
             'last_login' => null,
             'api_url' => 'http://localhost/api/users/123',
             'preferred_locale' => 'en',
+            'preferred_timezone' => 'Europe/Madrid',
         ], $this->additionalToArrayValues()), $arr);
     }
 

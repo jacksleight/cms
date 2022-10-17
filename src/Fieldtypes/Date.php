@@ -6,6 +6,8 @@ use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Statamic\Facades\GraphQL;
+use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Fields\Fieldtype;
 use Statamic\GraphQL\Fields\DateField;
 use Statamic\GraphQL\Types\DateRangeType;
@@ -113,9 +115,10 @@ class Date extends Fieldtype
     private function preProcessSingle($value)
     {
         $vueFormat = $this->defaultFormat();
+        $localTimezone = $this->localTimezone();
 
         if (! $value) {
-            return $this->isRequired() ? Carbon::now()->format($vueFormat) : null;
+            return $this->isRequired() ? Carbon::now($localTimezone)->format($vueFormat) : null;
         }
 
         // If the value is an array, this field probably used to be a range. In this case, we'll use the start date.
@@ -131,11 +134,12 @@ class Date extends Fieldtype
     private function preProcessRange($value)
     {
         $vueFormat = $this->defaultFormat();
+        $localTimezone = $this->localTimezone();
 
         if (! $value) {
             return $this->isRequired() ? [
-                'start' => Carbon::now()->format($vueFormat),
-                'end' => Carbon::now()->format($vueFormat),
+                'start' => Carbon::now($localTimezone)->format($vueFormat),
+                'end' => Carbon::now($localTimezone)->format($vueFormat),
             ] : null;
         }
 
@@ -167,7 +171,10 @@ class Date extends Fieldtype
             return $data;
         }
 
-        $date = Carbon::parse($data);
+        $localTimezone = $this->localTimezone();
+        $appTimezone = config('app.timezone');
+
+        $date = Carbon::parse($data, $localTimezone)->tz($appTimezone);
 
         return $this->formatAndCast($date, $this->saveFormat());
     }
@@ -190,14 +197,16 @@ class Date extends Fieldtype
             return;
         }
 
+        $localTimezone = $this->localTimezone();
+
         if ($this->config('mode') === 'range') {
-            $start = Carbon::parse($data['start'])->format($this->indexDisplayFormat());
-            $end = Carbon::parse($data['end'])->format($this->indexDisplayFormat());
+            $start = Carbon::parse($data['start'])->tz($localTimezone)->format($this->indexDisplayFormat());
+            $end = Carbon::parse($data['end'])->tz($localTimezone)->format($this->indexDisplayFormat());
 
             return $start.' - '.$end;
         }
 
-        return Carbon::parse($data)->format($this->indexDisplayFormat());
+        return Carbon::parse($data)->tz($localTimezone)->format($this->indexDisplayFormat());
     }
 
     private function saveFormat()
@@ -290,10 +299,23 @@ class Date extends Fieldtype
 
     private function parseSaved($value)
     {
+        $localTimezone = $this->localTimezone();
+
         try {
-            return Carbon::createFromFormat($this->saveFormat(), $value);
+            return Carbon::createFromFormat($this->saveFormat(), $value)->tz($localTimezone);
         } catch (InvalidFormatException|InvalidArgumentException $e) {
-            return Carbon::parse($value);
+            return Carbon::parse($value)->tz($localTimezone);
         }
+    }
+
+    private function localTimezone()
+    {
+        $appTimezone = config('app.timezone');
+
+        if (! $this->config('time_enabled') || $this->config('mode', 'single') === 'range') {
+            return $appTimezone;
+        }
+
+        return optional(User::current())->preferredTimezone() ?? Site::current()->timezone() ?? $appTimezone;
     }
 }

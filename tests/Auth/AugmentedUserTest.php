@@ -52,6 +52,7 @@ class AugmentedUserTest extends AugmentedTestCase
             ->setSupplement('three', 'the "three" value supplemented on the user')
             ->setSupplement('four', 'the "four" value supplemented on the user and in the blueprint')
             ->setPreferredLocale('en')
+            ->setPreferredTimezone('Europe/Madrid')
         )->save();
 
         $user->setMeta('last_login', '1486131000');
@@ -70,6 +71,7 @@ class AugmentedUserTest extends AugmentedTestCase
             'avatar'     => ['type' => 'string', 'value' => null],
             'api_url'    => ['type' => 'string', 'value' => 'http://localhost/api/users/user-id'],
             'preferred_locale' => ['type' => 'string', 'value' => 'en'],
+            'preferred_timezone' => ['type' => 'string', 'value' => 'Europe/Madrid'],
 
             'roles'       => ['type' => 'array', 'value' => ['role_one']],
             'is_role_one' => ['type' => 'bool', 'value' => true],

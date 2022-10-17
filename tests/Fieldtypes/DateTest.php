@@ -3,6 +3,8 @@
 namespace Tests\Fieldtypes;
 
 use Illuminate\Support\Carbon;
+use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Fields\Field;
 use Statamic\Fieldtypes\Date;
 use Tests\TestCase;
@@ -349,6 +351,134 @@ class DateTest extends TestCase
 
         $this->assertEquals('Y-m-d', $fieldtype->indexDisplayFormat());
         $this->assertEquals('Y-m-d', $fieldtype->fieldDisplayFormat());
+    }
+
+    /** @test */
+    public function it_saves_dates_as_app_timezone()
+    {
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->process('2022-10-10 12:00'));
+    }
+
+    /** @test */
+    public function it_saves_dates_as_app_timezone_when_using_site_timezone()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->process('2022-10-10 13:00'));
+    }
+
+    /** @test */
+    public function it_saves_dates_as_app_timezone_when_using_user_timezone()
+    {
+        $this->actingAs(User::make()->setPreferredTimezone('Europe/Berlin'));
+
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->process('2022-10-10 14:00'));
+    }
+
+    /** @test */
+    public function it_preprocesses_a_date_using_app_timezone()
+    {
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->preProcess('2022-10-10 12:00'));
+    }
+
+    /** @test */
+    public function it_preprocesses_a_date_using_site_timezone()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->assertEquals('2022-10-10 13:00', $this->fieldtype(['time_enabled' => true])->preProcess('2022-10-10 12:00'));
+    }
+
+    /** @test */
+    public function it_preprocesses_a_date_using_user_timezone()
+    {
+        $this->actingAs(User::make()->setPreferredTimezone('Europe/Berlin'));
+
+        $this->assertEquals('2022-10-10 14:00', $this->fieldtype(['time_enabled' => true])->preProcess('2022-10-10 12:00'));
+    }
+
+    /** @test */
+    public function it_augments_a_date_with_app_timezone()
+    {
+        $augmented = $this->fieldtype(['time_enabled' => true])->augment('2022-10-10 12:00');
+
+        $this->assertInstanceOf(Carbon::class, $augmented);
+        $this->assertEquals('2022 Oct 10 12:00 +0000', $augmented->format('Y M d H:i O'));
+    }
+
+    /** @test */
+    public function it_augments_a_date_with_site_timezone()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $augmented = $this->fieldtype(['time_enabled' => true])->augment('2022-10-10 12:00');
+
+        $this->assertInstanceOf(Carbon::class, $augmented);
+        $this->assertEquals('2022 Oct 10 13:00 +0100', $augmented->format('Y M d H:i O'));
+    }
+
+    /** @test */
+    public function it_augments_a_date_with_user_timezone()
+    {
+        $this->actingAs(User::make()->setPreferredTimezone('Europe/Berlin'));
+
+        $augmented = $this->fieldtype(['time_enabled' => true])->augment('2022-10-10 12:00');
+
+        $this->assertInstanceOf(Carbon::class, $augmented);
+        $this->assertEquals('2022 Oct 10 14:00 +0200', $augmented->format('Y M d H:i O'));
+    }
+
+    /** @test */
+    public function it_uses_user_timezone_over_site_timezone()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->actingAs(User::make()->setPreferredTimezone('Europe/Berlin'));
+
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->process('2022-10-10 14:00'));
+    }
+
+    /** @test */
+    public function it_uses_site_timezone_when_user_has_no_timezone()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->actingAs(User::make());
+
+        $this->assertEquals('2022-10-10 12:00', $this->fieldtype(['time_enabled' => true])->process('2022-10-10 13:00'));
+    }
+
+    /** @test */
+    public function it_doesnt_timezone_adjust_date_only_dates()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->assertEquals('2022-10-10', $this->fieldtype(['time_enabled' => false])->process('2022-10-10'));
+    }
+
+    /** @test */
+    public function it_doesnt_timezone_adjust_ranges()
+    {
+        Site::setConfig(['sites' => [
+            'en' => ['locale' => 'en', 'timezone' => 'Europe/London', 'url'=> 'http://localhost/'],
+        ]]);
+
+        $this->assertEquals(
+            ['start' => '2022-10-10', 'end' => '2022-10-12'],
+            $this->fieldtype(['mode' => 'range'])->process(['start' => '2022-10-10', 'end' => '2022-10-12'])
+        );
     }
 
     public function fieldtype($config = [])

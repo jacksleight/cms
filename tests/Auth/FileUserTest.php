@@ -70,6 +70,7 @@ class FileUserTest extends TestCase
             'content' => 'Lorem Ipsum',
             'preferences' => [
                 'locale' => 'en',
+                'timezone' => 'Europe/Madrid',
             ],
         ], Arr::removeNullValues($user->fileData()));
     }

@@ -20,9 +20,9 @@ class SitesTest extends TestCase
         $app['config']->set('statamic.sites', [
             'default' => 'en',
             'sites' => [
-                'en' => ['name' => 'English', 'locale' => 'en_US', 'url' => 'http://test.com/'],
-                'fr' => ['name' => 'French', 'locale' => 'fr_FR', 'url' => 'http://fr.test.com/'],
-                'de' => ['name' => 'German', 'locale' => 'de_DE', 'url' => 'http://test.com/de/'],
+                'en' => ['name' => 'English', 'locale' => 'en_US', 'timezone' => 'Europe/London', 'url' => 'http://test.com/'],
+                'fr' => ['name' => 'French', 'locale' => 'fr_FR', 'timezone' => 'Europe/Paris', 'url' => 'http://fr.test.com/'],
+                'de' => ['name' => 'German', 'locale' => 'de_DE', 'timezone' => 'Europe/Berlin', 'url' => 'http://test.com/de/'],
             ],
         ]);
     }
@@ -49,6 +49,7 @@ class SitesTest extends TestCase
         name
         locale
         short_locale
+        timezone
         url
     }
 }
@@ -59,9 +60,9 @@ GQL;
             ->post('/graphql', ['query' => $query])
             ->assertGqlOk()
             ->assertExactJson(['data' => ['sites' => [
-                ['handle' => 'en', 'name' => 'English', 'locale' => 'en_US', 'short_locale' => 'en', 'url' => 'http://test.com'],
-                ['handle' => 'fr', 'name' => 'French', 'locale' => 'fr_FR', 'short_locale' => 'fr', 'url' => 'http://fr.test.com'],
-                ['handle' => 'de', 'name' => 'German', 'locale' => 'de_DE', 'short_locale' => 'de', 'url' => 'http://test.com/de'],
+                ['handle' => 'en', 'name' => 'English', 'locale' => 'en_US', 'short_locale' => 'en', 'timezone' => 'Europe/London', 'url' => 'http://test.com'],
+                ['handle' => 'fr', 'name' => 'French', 'locale' => 'fr_FR', 'short_locale' => 'fr', 'timezone' => 'Europe/Paris', 'url' => 'http://fr.test.com'],
+                ['handle' => 'de', 'name' => 'German', 'locale' => 'de_DE', 'short_locale' => 'de', 'timezone' => 'Europe/Berlin', 'url' => 'http://test.com/de'],
             ]]]);
     }
 }

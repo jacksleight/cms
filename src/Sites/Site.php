@@ -34,6 +34,11 @@ class Site implements Augmentable
         return $this->config['locale'];
     }
 
+    public function timezone()
+    {
+        return $this->config['timezone'] ?? null;
+    }
+
     public function shortLocale()
     {
         return explode('-', str_replace('_', '-', $this->locale()))[0];
@@ -100,6 +105,7 @@ class Site implements Augmentable
             'lang' => $this->lang(),
             'locale' => $this->locale(),
             'short_locale' => $this->shortLocale(),
+            'timezone' => $this->timezone(),
             'url' => $this->url(),
             'permalink' => $this->absoluteUrl(),
             'direction' => $this->direction(),

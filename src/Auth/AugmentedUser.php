@@ -36,6 +36,7 @@ class AugmentedUser extends AbstractAugmented
             'avatar',
             'api_url',
             'preferred_locale',
+            'preferred_timezone',
         ];
     }
 
@@ -106,5 +107,10 @@ class AugmentedUser extends AbstractAugmented
     protected function preferredLocale()
     {
         return $this->data->preferredLocale();
+    }
+
+    protected function preferredTimezone()
+    {
+        return $this->data->preferredTimezone();
     }
 }

@@ -39,6 +39,12 @@ class SiteType extends \Rebing\GraphQL\Support\Type
                     return $site->shortLocale();
                 },
             ],
+            'timezone' => [
+                'type' => GraphQL::nonNull(GraphQL::string()),
+                'resolve' => function ($site) {
+                    return $site->timezone();
+                },
+            ],
             'url' => [
                 'type' => GraphQL::nonNull(GraphQL::string()),
                 'resolve' => function ($site) {
