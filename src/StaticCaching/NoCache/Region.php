@@ -44,7 +44,7 @@ abstract class Region
         $data = [];
 
         foreach ($a as $aKey => $aValue) {
-            if (! is_object($aKey) && is_array($b) && array_key_exists($aKey, $b)) {
+            if (! is_object($aValue) && is_array($b) && array_key_exists($aKey, $b)) {
                 if (is_array($aValue)) {
                     $aRecursiveDiff = $this->arrayRecursiveDiff($aValue, $b[$aKey]);
 
