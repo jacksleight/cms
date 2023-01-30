@@ -101,7 +101,7 @@ class Tags extends BaseTags
             $params['error_redirect'] = $this->parseRedirect($errorRedirect);
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method, $knownParams, $attrs),
                 'params' => $this->formMetaPrefix($this->formParams($method, $params)),

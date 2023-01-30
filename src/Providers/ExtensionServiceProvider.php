@@ -3,6 +3,7 @@
 namespace Statamic\Providers;
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Statamic\Actions;
 use Statamic\Actions\Action;
@@ -280,6 +281,7 @@ class ExtensionServiceProvider extends ServiceProvider
         }
 
         $this->registerCoreModifiers();
+        $this->registerCoreBladeDirectives();
     }
 
     protected function registerBindingAlias($key, $class)
@@ -345,5 +347,15 @@ class ExtensionServiceProvider extends ServiceProvider
         foreach ($this->updateScripts as $class) {
             $class::register(Statamic::PACKAGE);
         }
+    }
+
+    protected function registerCoreBladeDirectives()
+    {
+        Blade::directive('tag', function ($exp) {
+            return '<?php $__arguments = ['.$exp.', \Illuminate\Support\Arr::except(get_defined_vars(), ["__data"])]; $__callback = function ($__variables) { extract($__variables); ?>';
+        });
+        Blade::directive('endtag', function () {
+            return '<?php }; echo app("Statamic\Tags\BladeDirective")->handle($__callback, ...$__arguments); ?>';
+        });
     }
 }

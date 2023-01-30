@@ -34,7 +34,7 @@ class Tags extends BaseTags
         $action = route('statamic.protect.password.store');
         $method = 'POST';
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method),
                 'params' => array_merge($this->formMetaPrefix($this->formParams($method)), [

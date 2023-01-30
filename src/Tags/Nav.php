@@ -51,7 +51,7 @@ class Nav extends Structure
             return $crumb;
         });
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return $crumbs;
         }
 

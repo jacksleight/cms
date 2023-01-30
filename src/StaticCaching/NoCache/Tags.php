@@ -19,6 +19,13 @@ class Tags extends \Statamic\Tags\Tags
 
     public function index()
     {
+        if ($this->renderer) {
+            return $this
+                ->nocache
+                ->pushRenderer($this->renderer, $this->context->all())
+                ->placeholder();
+        }
+
         return $this
             ->nocache
             ->pushRegion($this->content, $this->context->all(), 'antlers.html')

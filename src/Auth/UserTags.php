@@ -114,7 +114,7 @@ class UserTags extends Tags
             $params['error_redirect'] = $this->parseRedirect($errorRedirect);
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method, $knownParams),
                 'params' => $this->formMetaPrefix($this->formParams($method, $params)),
@@ -160,7 +160,7 @@ class UserTags extends Tags
             $params['error_redirect'] = $this->parseRedirect($errorRedirect);
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method, $knownParams),
                 'params' => $this->formMetaPrefix($this->formParams($method, $params)),
@@ -331,7 +331,7 @@ class UserTags extends Tags
             $params['reset_url'] = $resetUrl;
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method, $knownParams),
                 'params' => $this->formMetaPrefix($this->formParams($method, $params)),
@@ -378,7 +378,7 @@ class UserTags extends Tags
         $token = Html::entities(request('token'));
         $redirect = $this->params->get('redirect');
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return array_merge([
                 'attrs' => $this->formAttrs($action, $method, $knownParams),
                 'params' => array_merge($this->formMetaPrefix($this->formParams($method)), [
@@ -551,7 +551,7 @@ class UserTags extends Tags
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function eventUrl($url, $relative = false)
     {

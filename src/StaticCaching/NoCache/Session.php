@@ -2,6 +2,7 @@
 
 namespace Statamic\StaticCaching\NoCache;
 
+use Closure;
 use Facades\Statamic\View\Cascade;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -59,6 +60,13 @@ class Session
     public function pushView($view, $context): ViewRegion
     {
         $region = new ViewRegion($this, $view, $context);
+
+        return $this->regions[$region->key()] = $region;
+    }
+
+    public function pushRenderer(Closure $renderer, $context): RendererRegion
+    {
+        $region = new RendererRegion($this, $renderer, $context);
 
         return $this->regions[$region->key()] = $region;
     }

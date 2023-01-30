@@ -2,10 +2,12 @@
 
 namespace Statamic\Tags;
 
+use Closure;
 use Statamic\Extend\HasAliases;
 use Statamic\Extend\HasHandle;
 use Statamic\Extend\RegistersItself;
 use Statamic\Facades\Antlers;
+use Statamic\Facades\Blade;
 use Statamic\Support\Arr;
 
 abstract class Tags
@@ -20,6 +22,13 @@ abstract class Tags
      * @public string
      */
     public $content;
+
+    /**
+     * The Blade renderer callback
+     *
+     * @public Closure
+     */
+    public $renderer;
 
     /**
      * The variable context around which this tag is positioned.
@@ -88,6 +97,7 @@ abstract class Tags
         $this->setParser($properties['parser']);
         $this->setContent($properties['content']);
         $this->setContext($properties['context']);
+        $this->setRenderer($properties['renderer'] ?? null);
         $this->setParameters($properties['params']);
         $this->tag = array_get($properties, 'tag');
         $this->method = array_get($properties, 'tag_method');
@@ -111,6 +121,13 @@ abstract class Tags
     public function setContext($context)
     {
         $this->context = new Context($context);
+
+        return $this;
+    }
+
+    public function setRenderer(Closure $renderer = null)
+    {
+        $this->renderer = $renderer;
 
         return $this;
     }
@@ -150,8 +167,15 @@ abstract class Tags
             $data = Arr::addScope($data, $scope);
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return $data;
+        }
+
+        if ($this->renderer) {
+            return Blade::usingRenderer($this->renderer, function ($blade) use ($data) {
+                return $blade
+                    ->render($data, $this->context->all());
+            });
         }
 
         return Antlers::usingParser($this->parser, function ($antlers) use ($data) {
@@ -178,8 +202,15 @@ abstract class Tags
             $data = Arr::addScope($data, $scope);
         }
 
-        if (! $this->parser) {
+        if (! $this->parser && ! $this->renderer) {
             return $data;
+        }
+
+        if ($this->renderer) {
+            return Blade::usingRenderer($this->renderer, function ($blade) use ($data, $supplement) {
+                return $blade
+                    ->renderLoop($data, $supplement, $this->context->all());
+            });
         }
 
         return Antlers::usingParser($this->parser, function ($antlers) use ($data, $supplement) {
