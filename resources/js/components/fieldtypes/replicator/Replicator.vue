@@ -4,7 +4,8 @@
 
         <div class="absolute top-0 right-0 p-3 text-2xs" v-if="config.collapse !== 'accordion' && value.length > 0">
             <button @click="collapseAll" class="text-blue hover:text-black mr-1" v-text="__('Collapse All')" />
-            <button @click="expandAll" class="text-blue hover:text-black" v-text="__('Expand All')" />
+            <button @click="expandAll" class="text-blue hover:text-black mr-1" v-text="__('Expand All')" />
+            <button @click="copyAll" class="text-blue hover:text-black" v-text="__('Copy All')" />
         </div>
 
         <sortable-list
@@ -38,6 +39,7 @@
                     @collapsed="collapseSet(set._id)"
                     @expanded="expandSet(set._id)"
                     @duplicated="duplicateSet(set._id)"
+                    @copied="copySet(set._id)"
                     @updated="updated"
                     @meta-updated="updateSetMeta(set._id, $event)"
                     @removed="removed(set, index)"
@@ -46,21 +48,31 @@
                     @previews-updated="updateSetPreviews(set._id, $event)"
                 >
                     <template v-slot:picker v-if="canAddSet">
-                        <set-picker
-                            class="replicator-set-picker-between"
-                            :sets="setConfigs"
-                            :index="index"
-                            @added="addSet" />
+                        <div class="replicator-set-picker-between">
+                            <set-picker
+                                :sets="setConfigs"
+                                :index="index"
+                                @added="addSet" />
+                            <set-paster
+                                :index="index"
+                                @pasted="pasteSet" />
+                        </div>
                     </template>
                 </replicator-set>
             </div>
         </sortable-list>
 
-        <set-picker v-if="canAddSet"
-            :last="true"
-            :sets="setConfigs"
-            :index="value.length"
-            @added="addSet" />
+        <div class="replicator-set-picker-last">
+            <set-picker v-if="canAddSet"
+                :last="true"
+                :sets="setConfigs"
+                :index="value.length"
+                @added="addSet" />
+            <set-paster v-if="canAddSet"
+                :last="true"
+                :index="value.length"
+                @pasted="pasteSet" />
+        </div>
 
     </div>
 
@@ -70,6 +82,7 @@
 import uniqid from 'uniqid';
 import ReplicatorSet from './Set.vue';
 import SetPicker from './SetPicker.vue';
+import SetPaster from './SetPaster.vue';
 import ManagesSetMeta from './ManagesSetMeta';
 import { SortableList } from '../../sortable/Sortable';
 
@@ -81,6 +94,7 @@ export default {
         ReplicatorSet,
         SortableList,
         SetPicker,
+        SetPaster,
     },
 
     inject: ['storeName'],
@@ -187,6 +201,46 @@ export default {
             this.expandSet(set._id);
         },
 
+        copySet(old_id) {
+            const index = this.value.findIndex(v => v._id === old_id);
+            const old = this.value[index];
+            const meta = this.meta.existing[old_id];
+            const items = [{ old, meta }];
+            const text = JSON.stringify(items);
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    Statamic.$toast.success(__('Copied to clipboard'));
+                });
+        },
+
+        pasteSet(index) {
+            navigator.clipboard.readText()
+                .then((text) => {
+                    const items = JSON.parse(text);
+                    items.forEach((item) => {
+                        const { old, meta } = item;
+                        const set = {
+                            ...old,
+                            _id: uniqid(),
+                        };
+
+                        this.updateSetPreviews(set._id, {});
+    
+                        this.updateSetMeta(set._id, meta);
+    
+                        this.update([
+                            ...this.value.slice(0, index),
+                            set,
+                            ...this.value.slice(index)
+                        ]);
+    
+                        this.expandSet(set._id);
+
+                        index++;
+                    });
+                });
+        },
+
         updateSetPreviews(id, previews) {
             this.updateMeta({
                 ...this.meta,
@@ -221,6 +275,18 @@ export default {
 
         expandAll() {
             this.collapsed = [];
+        },
+
+        copyAll() {
+            const items = this.value.map((old) => {
+                const meta = this.meta.existing[old._id];
+                return { old, meta };
+            });
+            const text = JSON.stringify(items);
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    Statamic.$toast.success(__('Copied to clipboard'));
+                });
         },
 
         blurred() {

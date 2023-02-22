@@ -30,6 +30,7 @@
                 <dropdown-list class="-mt-sm">
                     <dropdown-item :text="__(collapsed ? __('Expand Set') : __('Collapse Set'))" @click="toggleCollapsedState" />
                     <dropdown-item :text="__('Duplicate Set')" @click="duplicate" v-if="canAddSet" />
+                    <dropdown-item :text="__('Copy Set')" @click="copy" />
                     <dropdown-item :text="__('Delete Set')" class="warning" @click="destroy" />
                 </dropdown-list>
             </div>
@@ -213,6 +214,10 @@ export default {
 
         duplicate() {
             this.$emit('duplicated');
+        },
+
+        copy() {
+            this.$emit('copied');
         },
 
         fieldPath(field) {

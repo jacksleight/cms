@@ -56,7 +56,10 @@
 }
 
 .replicator-set-picker-between {
-    @apply absolute top-0 -mt-4 w-full text-center;
+    @apply absolute top-0 -mt-4 w-full justify-center flex gap-1;
+}
+.replicator-set-picker-last {
+    @apply flex gap-1;
 }
 
 // Extra contrast when full width
