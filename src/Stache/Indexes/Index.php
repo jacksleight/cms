@@ -4,6 +4,7 @@ namespace Statamic\Stache\Indexes;
 
 use Illuminate\Support\Facades\Cache;
 use Statamic\Facades\Stache;
+use Statamic\Stache\Stores\ChildStore;
 use Statamic\Statamic;
 
 abstract class Index
@@ -41,17 +42,17 @@ abstract class Index
 
     public function get($key)
     {
-        return $this->items[$key] ?? null;
+        return $this->items[$this->prefixKey($key)] ?? null;
     }
 
     public function has($key)
     {
-        return array_key_exists($key, $this->items);
+        return array_key_exists($this->prefixKey($key), $this->items);
     }
 
     public function put($key, $value)
     {
-        $this->items[$key] = $value;
+        $this->items[$this->prefixKey($key)] = $value;
     }
 
     public function push($value)
@@ -92,7 +93,9 @@ abstract class Index
 
         debugbar()->addMessage("Updating index: {$this->store->key()}/{$this->name}", 'stache');
 
-        $this->items = $this->getItems();
+        $this->items = collect($this->getItems())
+            ->mapWithKeys(fn ($value, $key) => [$this->prefixKey($key) => $value])
+            ->all();
 
         $this->cache();
 
@@ -122,7 +125,7 @@ abstract class Index
     {
         $this->load();
 
-        unset($this->items[$key]);
+        unset($this->items[$this->prefixKey($key)]);
 
         $this->cache();
     }
@@ -143,5 +146,12 @@ abstract class Index
         $this->items = null;
 
         Cache::forget($this->cacheKey());
+    }
+
+    public function prefixKey($key)
+    {
+        return $this->store instanceof ChildStore
+            ? ($this->store->childKey().'::'.$key)
+            : $key;
     }
 }

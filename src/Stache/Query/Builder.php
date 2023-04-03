@@ -3,7 +3,6 @@
 namespace Statamic\Stache\Query;
 
 use Statamic\Data\DataCollection;
-use Statamic\Facades\Blink;
 use Statamic\Query\Builder as BaseBuilder;
 use Statamic\Stache\Stores\Store;
 
@@ -98,14 +97,9 @@ abstract class Builder extends BaseBuilder
 
     public function getWhereColumnKeysFromStore($store, $where)
     {
-        return Blink::once("stache-query-keys-{$store}-{$where['column']}}", function () use ($store, $where) {
-            return $this->store->store($store)
-                ->index($where['column'])
-                ->items()
-                ->mapWithKeys(function ($item, $key) use ($store) {
-                    return ["{$store}::{$key}" => $item];
-                });
-        });
+        return $this->store->store($store)
+            ->index($where['column'])
+            ->items();
     }
 
     protected function intersectKeysFromWhereClause($keys, $newKeys, $where)
