@@ -203,7 +203,7 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
             return false;
         }
 
-        return $this->container()->files()->contains($path);
+        return $this->disk()->exists($path);
     }
 
     public function getRawMeta()
@@ -287,7 +287,11 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
 
     protected function metaExists()
     {
-        return $this->container()->metaFiles()->contains($this->metaPath());
+        if (! $metaPath = $this->metaPath()) {
+            return false;
+        }
+
+        return $this->disk()->exists($metaPath);
     }
 
     public function writeMeta($meta)
