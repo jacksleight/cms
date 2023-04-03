@@ -21,18 +21,29 @@ use Stringy\StaticStringy;
 class Statamic
 {
     const CORE_SLUG = 'statamic';
+
     const PACKAGE = 'statamic/cms';
 
     protected static $scripts = [];
+
     protected static $externalScripts = [];
+
     protected static $styles = [];
+
     protected static $externalStyles = [];
+
     protected static $vites = [];
+
     protected static $cpRoutes = [];
+
     protected static $webRoutes = [];
+
     protected static $actionRoutes = [];
+
     protected static $jsonVariables = [];
+
     protected static $bootedCallbacks = [];
+
     protected static $afterInstalledCallbacks = [];
 
     public static function version()
@@ -188,7 +199,7 @@ class Statamic
             return null;
         }
 
-        $route = route('statamic.cp.'.$route, $params);
+        $route = null;
 
         // TODO: This is a temporary workaround to routes like
         // `route('assets.browse.edit', 'some/image.jpg')` outputting two slashes.

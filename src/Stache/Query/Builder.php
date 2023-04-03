@@ -5,10 +5,12 @@ namespace Statamic\Stache\Query;
 use Statamic\Data\DataCollection;
 use Statamic\Query\Builder as BaseBuilder;
 use Statamic\Stache\Stores\Store;
+use Statamic\Stache\Stores\UsersStore;
 
 abstract class Builder extends BaseBuilder
 {
     protected $store;
+
     protected $randomize = false;
 
     public function __construct(Store $store)
@@ -94,15 +96,15 @@ abstract class Builder extends BaseBuilder
         return $items->keys();
     }
 
-    public function getWhereColumnKeysFromStore($store, $where)
-    {
-        return $this->store->store($store)
-            ->index($where['column'])
-            ->items()
-            ->mapWithKeys(function ($item, $key) use ($store) {
-                return ["{$store}::{$key}" => $item];
-            });
-    }
+    // public function getWhereColumnKeysFromStore($store, $where)
+    // {
+    //     return $this->store->store($store)
+    //         ->index($where['column'])
+    //         ->items()
+    //         ->mapWithKeys(function ($item, $key) use ($store) {
+    //             return ["{$store}::{$key}" => $item];
+    //         });
+    // }
 
     protected function intersectKeysFromWhereClause($keys, $newKeys, $where)
     {
@@ -131,20 +133,60 @@ abstract class Builder extends BaseBuilder
         return $this->store->getItems($keys);
     }
 
-    protected function filterWhereBasic($values, $where)
+    protected function filterWhereBasic($stores, $where)
     {
-        return $values->filter(function ($value) use ($where) {
-            $method = 'filterTest'.$this->operators[$where['operator']];
+        $items = collect();
 
-            return $this->{$method}($value, $where['value']);
-        });
+        collect($stores)
+            ->each(function ($store) use ($where, &$items) {
+                if ($this->store instanceof UsersStore) {
+                    $storeObj = $this->store;
+                    $prefix = '';
+                } else {
+                    $storeObj = $this->store->store($store);
+                    $prefix = $store.'::';
+                }
+                $items = $items->merge($storeObj->index($where['column'])
+                    ->query()
+                    ->where('value', $where['value'])
+                    ->get()
+                    ->mapWithKeys(function ($item) use ($prefix) {
+                        return ["{$prefix}{$item->id}" => $item->value];
+                    }));
+            });
+
+        return $items;
+
+        // return $values->filter(function ($value) use ($where) {
+        //     $method = 'filterTest'.$this->operators[$where['operator']];
+
+        //     return $this->{$method}($value, $where['value']);
+        // });
     }
 
-    protected function filterWhereIn($values, $where)
+    protected function filterWhereIn($stores, $where)
     {
-        return $values->filter(function ($value) use ($where) {
-            return in_array($value, $where['values']);
-        });
+        $items = collect();
+
+        collect($stores)
+            ->each(function ($store) use ($where, &$items) {
+                if ($this->store instanceof UsersStore) {
+                    $storeObj = $this->store;
+                    $prefix = '';
+                } else {
+                    $storeObj = $this->store->store($store);
+                    $prefix = $store.'::';
+                }
+                $items = $items->merge($storeObj->index($where['column'])
+                    ->query()
+                    ->whereIn('value', $where['values'])
+                    ->get()
+                    ->mapWithKeys(function ($item) use ($prefix) {
+                        return ["{$prefix}{$item->id}" => $item->value];
+                    }));
+            });
+
+        return $items;
     }
 
     protected function filterWhereNotIn($values, $where)
@@ -316,6 +358,7 @@ abstract class Builder extends BaseBuilder
 
     protected function filterWhereColumn($values, $where)
     {
+        throw new \Exception('WHOOPS');
         $whereColumnKeys = $this->getWhereColumnKeyValuesByIndex($where['value']);
 
         return $values->filter(function ($value, $key) use ($where, $whereColumnKeys) {
@@ -325,8 +368,8 @@ abstract class Builder extends BaseBuilder
         });
     }
 
-    protected function getWhereColumnKeyValuesByIndex($column)
-    {
-        return $this->store->index($column)->items();
-    }
+    // protected function getWhereColumnKeyValuesByIndex($column)
+    // {
+    //     return $this->store->index($column)->items();
+    // }
 }

@@ -81,13 +81,13 @@ class EntryQueryBuilder extends Builder implements QueryBuilder
 
     protected function getKeysFromCollectionsWithWhere($collections, $where)
     {
-        $items = collect($collections)->flatMap(function ($collection) use ($where) {
-            return $this->getWhereColumnKeysFromStore($collection, $where);
-        });
+        // $items = collect($collections)->flatMap(function ($collection) use ($where) {
+        //     return $this->getWhereColumnKeysFromStore($collection, $where);
+        // });
 
         $method = 'filterWhere'.$where['type'];
 
-        return $this->{$method}($items, $where)->keys();
+        return $this->{$method}($collections, $where)->keys();
     }
 
     protected function getOrderKeyValuesByIndex()
@@ -121,14 +121,14 @@ class EntryQueryBuilder extends Builder implements QueryBuilder
         }, collect());
     }
 
-    protected function getWhereColumnKeyValuesByIndex($column)
-    {
-        $collections = empty($this->collections)
-            ? Facades\Collection::handles()
-            : $this->collections;
+    // protected function getWhereColumnKeyValuesByIndex($column)
+    // {
+    //     $collections = empty($this->collections)
+    //         ? Facades\Collection::handles()
+    //         : $this->collections;
 
-        return collect($collections)->flatMap(function ($collection) use ($column) {
-            return $this->getWhereColumnKeysFromStore($collection, ['column' => $column]);
-        });
-    }
+    //     return collect($collections)->flatMap(function ($collection) use ($column) {
+    //         return $this->getWhereColumnKeysFromStore($collection, ['column' => $column]);
+    //     });
+    // }
 }

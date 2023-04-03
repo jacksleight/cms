@@ -45,13 +45,13 @@ class QueryBuilder extends BaseQueryBuilder implements Contract
 
     protected function getKeysFromContainersWithWhere($containers, $where)
     {
-        $items = collect($containers)->flatMap(function ($collection) use ($where) {
-            return $this->getWhereColumnKeysFromStore($collection, $where);
-        });
+        // $items = collect($containers)->flatMap(function ($collection) use ($where) {
+        //     return $this->getWhereColumnKeysFromStore($collection, $where);
+        // });
 
         $method = 'filterWhere'.$where['type'];
 
-        return $this->{$method}($items, $where)->keys();
+        return $this->{$method}($containers, $where)->keys();
     }
 
     protected function getOrderKeyValuesByIndex()
@@ -109,14 +109,14 @@ class QueryBuilder extends BaseQueryBuilder implements Contract
         return AssetCollection::make($items);
     }
 
-    protected function getWhereColumnKeyValuesByIndex($column)
-    {
-        $container = $this->getContainer()->handle();
+    // protected function getWhereColumnKeyValuesByIndex($column)
+    // {
+    //     $container = $this->getContainer()->handle();
 
-        $items = collect([$container])->flatMap(function ($collection) use ($column) {
-            return $this->getWhereColumnKeysFromStore($collection, ['column' => $column]);
-        });
+    //     $items = collect([$container])->flatMap(function ($collection) use ($column) {
+    //         return $this->getWhereColumnKeysFromStore($collection, ['column' => $column]);
+    //     });
 
-        return $items;
-    }
+    //     return $items;
+    // }
 }

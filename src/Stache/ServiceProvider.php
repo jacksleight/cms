@@ -18,6 +18,10 @@ class ServiceProvider extends LaravelServiceProvider
             return (new Stache)->setLockFactory($this->locks());
         });
 
+        $this->app->singleton(Database::class, function () {
+            return new Database;
+        });
+
         $this->app->alias(Stache::class, 'stache');
 
         $this->app->singleton('stache.indexes', function () {

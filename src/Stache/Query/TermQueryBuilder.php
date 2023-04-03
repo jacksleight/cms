@@ -9,6 +9,7 @@ use Statamic\Taxonomies\TermCollection;
 class TermQueryBuilder extends Builder
 {
     protected $taxonomies;
+
     protected $collections;
 
     public function where($column, $operator = null, $value = null, $boolean = 'and')
@@ -94,13 +95,13 @@ class TermQueryBuilder extends Builder
 
     protected function getKeysFromTaxonomiesWithWhere($taxonomies, $where)
     {
-        $items = collect($taxonomies)->flatMap(function ($taxonomy) use ($where) {
-            return $this->getWhereColumnKeysFromStore($taxonomy, $where);
-        });
+        // $items = collect($taxonomies)->flatMap(function ($taxonomy) use ($where) {
+        //     return $this->getWhereColumnKeysFromStore($taxonomy, $where);
+        // });
 
         $method = 'filterWhere'.$where['type'];
 
-        return $this->{$method}($items, $where)->keys();
+        return $this->{$method}($taxonomies, $where)->keys();
     }
 
     protected function getOrderKeyValuesByIndex()
@@ -160,20 +161,20 @@ class TermQueryBuilder extends Builder
         })->all());
     }
 
-    protected function getWhereColumnKeyValuesByIndex($column)
-    {
-        $taxonomies = empty($this->taxonomies)
-            ? Facades\Taxonomy::handles()
-            : $this->taxonomies;
+    // protected function getWhereColumnKeyValuesByIndex($column)
+    // {
+    //     $taxonomies = empty($this->taxonomies)
+    //         ? Facades\Taxonomy::handles()
+    //         : $this->taxonomies;
 
-        if ($this->collections) {
-            $this->filterUsagesWithinCollections($taxonomies);
-        }
+    //     if ($this->collections) {
+    //         $this->filterUsagesWithinCollections($taxonomies);
+    //     }
 
-        $items = collect($taxonomies)->flatMap(function ($taxonomy) use ($column) {
-            return $this->getWhereColumnKeysFromStore($taxonomy, ['column' => $column]);
-        });
+    //     $items = collect($taxonomies)->flatMap(function ($taxonomy) use ($column) {
+    //         return $this->getWhereColumnKeysFromStore($taxonomy, ['column' => $column]);
+    //     });
 
-        return $items;
-    }
+    //     return $items;
+    // }
 }

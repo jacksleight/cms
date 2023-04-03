@@ -2,15 +2,18 @@
 
 namespace Statamic\Stache\Indexes;
 
-use Illuminate\Support\Facades\Cache;
+use Facades\Statamic\Stache\Database;
 use Statamic\Facades\Stache;
 use Statamic\Statamic;
 
 abstract class Index
 {
     protected $store;
+
     protected $name;
+
     protected $items = [];
+
     protected $loaded = false;
 
     public function __construct($store, $name)
@@ -26,16 +29,22 @@ abstract class Index
 
     public function items()
     {
+        // dump($this);
+
         return collect($this->items);
     }
 
     public function values()
     {
+        // dump($this);
+
         return array_values($this->items);
     }
 
     public function keys()
     {
+        // dump($this);
+
         return array_keys($this->items);
     }
 
@@ -59,6 +68,11 @@ abstract class Index
         $this->items[] = $value;
     }
 
+    public function query()
+    {
+        return Database::query($this->tableName());
+    }
+
     public function load()
     {
         if ($this->loaded) {
@@ -71,15 +85,15 @@ abstract class Index
             $this->loaded = false;
         }
 
-        debugbar()->addMessage("Loading index: {$this->store->key()}/{$this->name}", 'stache');
+        // debugbar()->addMessage("Loading index: {$this->store->key()}/{$this->name}", 'stache');
 
-        $this->items = Cache::get($this->cacheKey());
+        // $this->items = Database::get($this->tableName());
 
-        if ($this->items === null) {
-            $this->update();
-        }
+        // if ($this->items === null) {
+        //     $this->update();
+        // }
 
-        $this->store->cacheIndexUsage($this);
+        // $this->store->cacheIndexUsage($this);
 
         return $this;
     }
@@ -101,12 +115,12 @@ abstract class Index
 
     public function isCached()
     {
-        return Cache::has($this->cacheKey());
+        return Database::has($this->tableName());
     }
 
     public function cache()
     {
-        Cache::forever($this->cacheKey(), $this->items);
+        Database::forever($this->tableName(), $this->items);
     }
 
     public function updateItem($item)
@@ -137,11 +151,16 @@ abstract class Index
         ]);
     }
 
+    public function tableName()
+    {
+        return str_replace('::', '_', $this->cacheKey());
+    }
+
     public function clear()
     {
         $this->loaded = false;
         $this->items = null;
 
-        Cache::forget($this->cacheKey());
+        Database::forget($this->tableName());
     }
 }
