@@ -131,10 +131,6 @@ abstract class Builder extends BaseBuilder
 
     protected function filterWhereBasic($values, $where)
     {
-        if ($where['operator'] === '=') {
-            return $values->flip()->intersectByKeys(array_flip([$where['value']]))->flip();
-        }
-
         return $values->filter(function ($value) use ($where) {
             $method = 'filterTest'.$this->operators[$where['operator']];
 
