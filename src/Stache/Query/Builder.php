@@ -131,6 +131,10 @@ abstract class Builder extends BaseBuilder
 
     protected function filterWhereBasic($values, $where)
     {
+        if ($where['operator'] === '=') {
+            return $values->flip()->intersectByKeys(array_flip([$where['value']]))->flip();
+        }
+
         return $values->filter(function ($value) use ($where) {
             $method = 'filterTest'.$this->operators[$where['operator']];
 
@@ -149,9 +153,11 @@ abstract class Builder extends BaseBuilder
 
     protected function filterWhereNotIn($values, $where)
     {
-        return $values->filter(function ($value) use ($where) {
-            return ! in_array($value, $where['values']);
-        });
+        return $values->flip()->diffByKeys(array_flip($where['values']))->flip();
+
+        // return $values->filter(function ($value) use ($where) {
+        //     return ! in_array($value, $where['values']);
+        // });
     }
 
     protected function filterWhereNull($values, $where)
