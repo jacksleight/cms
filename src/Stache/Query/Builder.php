@@ -160,7 +160,7 @@ abstract class Builder extends BaseBuilder
             if ($operator === 'Equals') {
                 return $flipped['items']->intersectByKeys($flipped['values'])->flip();
             } elseif ($operator === 'NotEquals') {
-                return $flipped['items']->diffByKeys($flipped['values'])->flip();
+                return $flipped['items']->diffKeys($flipped['values'])->flip();
             }
         }
 
@@ -185,7 +185,7 @@ abstract class Builder extends BaseBuilder
     protected function filterWhereNotIn($values, $where)
     {
         if ($flipped = $this->getFlipped($values, $where['values'])) {
-            return $flipped['items']->diffByKeys($flipped['values'])->flip();
+            return $flipped['items']->diffKeys($flipped['values'])->flip();
         }
 
         return $values->filter(function ($value) use ($where) {

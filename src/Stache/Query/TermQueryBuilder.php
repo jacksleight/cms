@@ -4,6 +4,7 @@ namespace Statamic\Stache\Query;
 
 use Statamic\Facades;
 use Statamic\Facades\Collection;
+use Statamic\Support\Str;
 use Statamic\Taxonomies\TermCollection;
 
 class TermQueryBuilder extends Builder
@@ -76,7 +77,7 @@ class TermQueryBuilder extends Builder
             $store = $this->store->store($taxonomy);
 
             return collect($store->index('title')->keys())->map(function ($key) use ($taxonomy) {
-                return "{$taxonomy}::{$key}";
+                return "{$taxonomy}::".Str::after($key, '::');
             });
         });
     }
