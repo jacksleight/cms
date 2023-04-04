@@ -7,6 +7,7 @@ use Facades\Statamic\Assets\Attributes;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Statamic\Assets\AssetUploader as Uploader;
 use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Contracts\Assets\AssetContainer as AssetContainerContract;
@@ -203,7 +204,11 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
             return false;
         }
 
-        return $this->disk()->exists($path);
+        if ($this->disk()->filesystem()->getAdapter() instanceof LocalFilesystemAdapter) {
+            return $this->disk()->exists($path);
+        }
+
+        return $this->container()->files()->contains($path);
     }
 
     public function getRawMeta()
@@ -291,7 +296,11 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
             return false;
         }
 
-        return $this->disk()->exists($metaPath);
+        if ($this->disk()->filesystem()->getAdapter() instanceof LocalFilesystemAdapter) {
+            return $this->disk()->exists($metaPath);
+        }
+
+        return $this->container()->metaFiles()->contains($metaPath);
     }
 
     public function writeMeta($meta)
