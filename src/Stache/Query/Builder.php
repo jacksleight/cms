@@ -141,8 +141,9 @@ abstract class Builder extends BaseBuilder
             return false;
         }
 
-        // Arrays with non-unique values will result in keys being lost
-        if ($items->count() !== $flippedItems->count() || count($values) !== count($flippedValues)) {
+        // Arrays with non-unique values will result in keys being lost, only
+        // check items as it doesn't matter if $values duplicates are lost
+        if ($items->count() !== $flippedItems->count()) {
             return false;
         }
 
