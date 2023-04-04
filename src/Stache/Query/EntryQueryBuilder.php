@@ -100,12 +100,10 @@ class EntryQueryBuilder extends Builder implements QueryBuilder
         $keys = collect($collections)->map(function ($collection) {
             $store = $this->store->store($collection);
 
-            return collect($this->orderBys)->mapWithKeys(function ($orderBy) use ($collection, $store) {
+            return collect($this->orderBys)->mapWithKeys(function ($orderBy) use ($store) {
                 $items = $store->index($orderBy->sort)
                     ->items()
-                    ->mapWithKeys(function ($item, $key) use ($collection) {
-                        return ["{$collection}::{$key}" => $item];
-                    })->all();
+                    ->all();
 
                 return [$orderBy->sort => $items];
             });

@@ -113,12 +113,10 @@ class TermQueryBuilder extends Builder
         $keys = collect($taxonomies)->map(function ($taxonomy) {
             $store = $this->store->store($taxonomy);
 
-            return collect($this->orderBys)->mapWithKeys(function ($orderBy) use ($taxonomy, $store) {
+            return collect($this->orderBys)->mapWithKeys(function ($orderBy) use ($store) {
                 $items = $store->index($orderBy->sort)
                     ->items()
-                    ->mapWithKeys(function ($item, $key) use ($taxonomy) {
-                        return ["{$taxonomy}::{$key}" => $item];
-                    })->all();
+                    ->all();
 
                 return [$orderBy->sort => $items];
             });

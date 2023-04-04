@@ -2,6 +2,7 @@
 
 namespace Statamic\Stache\Query;
 
+use ErrorException;
 use Statamic\Data\DataCollection;
 use Statamic\Query\Builder as BaseBuilder;
 use Statamic\Stache\Stores\Store;
@@ -129,10 +130,42 @@ abstract class Builder extends BaseBuilder
         return $this->store->getItems($keys);
     }
 
+    protected function getFlipped($items, $values)
+    {
+        // Arrays with non-scalar values cant be flipped, but checking all the
+        // values first would add overhead so just catch the exception
+        try {
+            $flippedItems = $items->flip();
+            $flippedValues = array_flip($values);
+        } catch (ErrorException) {
+            return false;
+        }
+
+        // Arrays with non-unique values will result in keys being lost
+        if ($items->count() !== $flippedItems->count() || count($values) !== count($flippedValues)) {
+            return false;
+        }
+
+        return [
+            'items' => $flippedItems,
+            'values' => $flippedValues,
+        ];
+    }
+
     protected function filterWhereBasic($values, $where)
     {
-        return $values->filter(function ($value) use ($where) {
-            $method = 'filterTest'.$this->operators[$where['operator']];
+        $operator = $this->operators[$where['operator']];
+
+        if ($flipped = $this->getFlipped($values, [$where['value']])) {
+            if ($operator === 'Equals') {
+                return $flipped['items']->intersectByKeys($flipped['values'])->flip();
+            } elseif ($operator === 'NotEquals') {
+                return $flipped['items']->diffByKeys($flipped['values'])->flip();
+            }
+        }
+
+        return $values->filter(function ($value) use ($where, $operator) {
+            $method = 'filterTest'.$operator;
 
             return $this->{$method}($value, $where['value']);
         });
@@ -140,20 +173,24 @@ abstract class Builder extends BaseBuilder
 
     protected function filterWhereIn($values, $where)
     {
-        return $values->flip()->intersectByKeys(array_flip($where['values']))->flip();
+        if ($flipped = $this->getFlipped($values, $where['values'])) {
+            return $flipped['items']->intersectByKeys($flipped['values'])->flip();
+        }
 
-        // return $values->filter(function ($value) use ($where) {
-        //     return in_array($value, $where['values']);
-        // });
+        return $values->filter(function ($value) use ($where) {
+            return in_array($value, $where['values']);
+        });
     }
 
     protected function filterWhereNotIn($values, $where)
     {
-        return $values->flip()->diffByKeys(array_flip($where['values']))->flip();
+        if ($flipped = $this->getFlipped($values, $where['values'])) {
+            return $flipped['items']->diffByKeys($flipped['values'])->flip();
+        }
 
-        // return $values->filter(function ($value) use ($where) {
-        //     return ! in_array($value, $where['values']);
-        // });
+        return $values->filter(function ($value) use ($where) {
+            return ! in_array($value, $where['values']);
+        });
     }
 
     protected function filterWhereNull($values, $where)
