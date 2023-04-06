@@ -73,17 +73,23 @@ class EntryQueryBuilder extends Builder implements QueryBuilder
         return collect($wheres)->reduce(function ($ids, $where) use ($collections) {
             $keys = $where['type'] == 'Nested'
                 ? $this->getKeysFromCollectionsWithWheres($collections, $where['query']->wheres)
-                : $this->getKeysFromCollectionsWithWhere($collections, $where);
+                : $this->getKeysFromCollectionsWithWhere($collections, $where, $ids);
 
             return $this->intersectKeysFromWhereClause($ids, $keys, $where);
         });
     }
 
-    protected function getKeysFromCollectionsWithWhere($collections, $where)
+    protected function getKeysFromCollectionsWithWhere($collections, $where, $current = null)
     {
         $items = collect($collections)->flatMap(function ($collection) use ($where) {
             return $this->getWhereColumnKeysFromStore($collection, $where);
         });
+
+        // If this is an "and" condition and there's already a set of keys from
+        // the previous condition pre-filter the list of potential items
+        if ($where['boolean'] === 'and' && $current) {
+            $items = $items->only($current);
+        }
 
         $method = 'filterWhere'.$where['type'];
 
