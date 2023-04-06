@@ -150,6 +150,11 @@ abstract class Index
 
     public function prefixKey($key)
     {
+        // Hack, WIP
+        if ($this->name === 'path') {
+            return $key;
+        }
+
         return $this->store instanceof ChildStore
             ? ($this->store->childKey().'::'.$key)
             : $key;
