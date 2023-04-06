@@ -150,7 +150,7 @@ abstract class Index
 
     public function prefixKey($key)
     {
-        // Hack, WIP
+        // Temp hack, store path lookups dont want the prefix and excluding it here was easiest
         if ($this->name === 'path') {
             return $key;
         }
