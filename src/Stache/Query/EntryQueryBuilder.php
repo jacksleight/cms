@@ -86,7 +86,7 @@ class EntryQueryBuilder extends Builder implements QueryBuilder
         });
 
         // If this is an "and" condition and there's already a set of keys from
-        // the previous condition pre-filter the list of potential items
+        // the previous condition(s) pre-filter the list of potential items
         if ($where['boolean'] === 'and' && $current) {
             $items = $items->only($current);
         }
