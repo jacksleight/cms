@@ -215,6 +215,7 @@ class ExtensionServiceProvider extends ServiceProvider
 
     protected $formJsDrivers = [
         JsDrivers\Alpine::class,
+        JsDrivers\AlpinePrecognition::class,
     ];
 
     protected $updateScripts = [

@@ -16,6 +16,7 @@ use Statamic\Exceptions\SilentFormFailureException;
 use Statamic\Facades\Site;
 use Statamic\Forms\Exceptions\FileContentTypeRequiredException;
 use Statamic\Forms\SendEmails;
+use Statamic\Http\Requests\FormRequest;
 use Statamic\Support\Arr;
 use Statamic\Support\Str;
 
@@ -28,7 +29,7 @@ class FormController extends Controller
      *
      * @return mixed
      */
-    public function submit(Request $request, $form)
+    public function submit(FormRequest $request, $form)
     {
         $site = Site::findByUrl(URL::previous()) ?? Site::default();
         $fields = $form->blueprint()->fields();
