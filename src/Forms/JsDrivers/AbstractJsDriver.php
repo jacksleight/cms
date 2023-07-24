@@ -145,6 +145,24 @@ abstract class AbstractJsDriver implements JsDriver
     }
 
     /**
+     * Get initial form errors.
+     *
+     * @return array
+     */
+    protected function getInitialFormErrors()
+    {
+        if (! $errors = session()->get('errors')) {
+            return;
+        }
+
+        if (! $errors = $errors->getBag('form.'.$this->form->handle())) {
+            return;
+        }
+
+        return $errors->messages();
+    }
+
+    /**
      * Get JS driver handle from class name.
      *
      * @return string
