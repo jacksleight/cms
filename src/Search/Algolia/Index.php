@@ -69,7 +69,9 @@ class Index extends BaseIndex
                 ->reject(fn ($objectID) => $objectIDs->contains($objectID))
                 ->values()
                 ->all();
-            $this->getIndex()->delete($staleObjectIDs);
+            if (count($staleObjectIDs)) {
+                $this->getIndex()->delete($staleObjectIDs);
+            }
         } catch (ConnectException $e) {
             throw new \Exception('Error connecting to Algolia. Check your API credentials.', 0, $e);
         }
@@ -94,20 +96,21 @@ class Index extends BaseIndex
 
     protected function splitDocument($item, $field)
     {
+        $item = array_merge($item, [
+            'objectID' => $item['objectID'].'::chunk-0',
+            'sourceID' => $item['objectID'],
+        ]);
+
         $maxSize = 10_000;
         $getSize = fn ($data) => mb_strlen(json_encode($data));
 
         $totalSize = $getSize($item);
-        if ($totalSize <= $maxSize) {
+        if ($totalSize <= $maxSize || ! is_string($item[$field] ?? null)) {
             return [$item];
         }
 
         $content = $item[$field];
-        $partial = array_merge($item, [
-            'objectID' => $item['objectID'].'::chunk-0',
-            'sourceID' => $item['objectID'],
-            $field => '',
-        ]);
+        $partial = array_merge($item, [$field => '']);
 
         $chunkSize = $maxSize - $getSize($partial);
 
